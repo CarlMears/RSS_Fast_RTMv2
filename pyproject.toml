@@ -1,0 +1,22 @@
+[build-system]
+build-backend = 'mesonpy'
+requires = ['meson-python', 'numpy']
+
+[project]
+authors = [{name = "Carl Mears", email = "mears@remss.com"}]
+name = "atm_rtm"
+version = "0.0.1"
+
+dependencies = [
+  "numpy",
+]
+requires-python = ">=3.9"
+
+[project.urls]
+Repository = "http://gitlab.remss.com/access/atm_rtm_python_wrapper"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+geomod10 = ["*.f90"]
