@@ -210,6 +210,7 @@ plot_global_map(tbup_map_rss[:,:,14],title='RSS 2022 Tbup Limb',cmap='plasma',pl
 plot_global_map(tran_map_rss[:,:,0],title='RSS 2022 Tran Nadir',cmap='plasma',plt_colorbar=True,vmin=0.0,vmax=1.0)
 plot_global_map(tran_map_rss[:,:,14],title='RSS 2022 Tbup Limb',cmap='plasma',plt_colorbar=True,vmin=0.0,vmax=1.0)
 
+
 print
 
 # tb_maps_rss = np.zeros((2,5,721,1440),dtype=np.float32,order='F')
