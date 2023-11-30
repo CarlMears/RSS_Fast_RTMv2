@@ -46,32 +46,6 @@ def convert_ql_to_rhol(ql,p,q,t):
 def calc_tb_toa(tran,tbup,tbdw,t_surf,emiss,space_tb):
     return tbup + tran*(t_surf*emiss + (1.0-emiss)*(tbdw+(tran*space_tb)))
 
-# def find_frequencies(channel):
-#     channel_index = channel - 1
-#     AMSU_num_freq = 7
-#     if amsu_constants.AMSU_A_FREQ_SPLIT_2[channel_index] > 0.01:
-#         raise ValueError('This code does not support AMSU-A channels with double-split frequency bands')
-
-#     if amsu_constants.AMSU_A_FREQ_SPLIT_1[channel_index] < 0.01:
-#         AMSU_num_band = 1
-#     else:
-#         AMSU_num_band = 2
-
-        
-
-#     # construct an array of frequencies where the calc is performed
-#     amsu_freq_arr = np.full((AMSU_num_freq,AMSU_num_band),np.nan,dtype=np.float32,order='F')
-#     for band_index in range(0,AMSU_num_band):
-#         for freq_index in range(0,AMSU_num_freq):
-#             amsu_freq_arr[freq_index,band_index] = (                        
-#                     amsu_constants.AMSU_A_FREQ[channel_index] +                                    
-#                     2.0*(band_index-0.5)*amsu_constants.AMSU_A_FREQ_SPLIT_1[channel_index] -                 
-#                     amsu_constants.AMSU_A_BANDWIDTH[channel_index]/2.0 +                            
-#                     (1+2*freq_index)*amsu_constants.AMSU_A_BANDWIDTH[channel_index]/(2.0*AMSU_num_freq))
-
-
-#     return amsu_freq_arr.flatten(order='F')
-
 channel = 5
 AMSU_num_freq = 7
 O2_model_rss = 'RSS_2022'
@@ -86,9 +60,10 @@ print('Starting Reading ERA5')
 ds = xr.open_dataset(era5_file)
 ds_surf = xr.open_dataset(era5_surf_file)
 
-ilat = 360
-ilon = 0
+#use the first time step as an example
 time = 0
+
+# set up the arrays for the RTM.  "asfortranarray" is required for the fortran routines.
 p = ds['level'].values.astype(np.float32)
 p = np.asfortranarray(np.tile(p,(1440,721,1)).T)
 t = np.asfortranarray(ds['t'][time,:,:,:].values)
@@ -99,11 +74,13 @@ p_surf = np.asfortranarray(ds_surf['sp'][time,:,:].values/100.0)
 t_surf = np.asfortranarray(ds_surf['t2m'][time,:,:].values)
 dp_surf = np.asfortranarray(ds_surf['d2m'][time,:,:].values)
 z_surf = np.asfortranarray(ds_surf['z'][time,:,:].values)
-
-print('Finished Reading ERA5')
 h_surf =z_surf*re/(9.80665*re - z_surf)
+print('Finished Reading ERA5')
+
 
 print('Preparing ERA5 data from RTM')
+
+# calculate vapor partial pressure at the surface from the dew point.
 pv_surf = np.asfortranarray(np.zeros((721*1440),dtype=np.float32))
 atm_rtm.atm_rtm.goff_gratch_rss_2022(np.reshape(dp_surf,-1),
                                     np.ones((721*1440),dtype=np.float32)*100.0,
@@ -124,7 +101,7 @@ ql = np.reshape(ql,(ql.shape[0],-1))
 q = np.reshape(q,(q.shape[0],-1))
 z = np.reshape(z,(z.shape[0],-1))
 
-#convert from geopontential to height
+#convert from geopotential to pysical height in meters
 h =z*re/(9.80665*re - z)
 
 #convert from q to pv
@@ -162,13 +139,14 @@ tot_abs_rosen = cld_abs + o2_vap_abs_rosen
 tot_abs_rss = tot_abs_rss/1000.0
 tot_abs_rosen = tot_abs_rosen/1000.0
 
-
 print('Calculating Trans, Tbdw, Tbup')
 
 nom_eias = amsu_constants.AMSU_NOM_EIAS
 num_eias = len(nom_eias)
 
 tht = 0.0
+
+# allocate arrays for the results.  Setting order='F' is required for fortran routines.
 tran_arr_rss= np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbup_arr_rss = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbdw_arr_rss = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
@@ -177,22 +155,22 @@ tran_arr_rosen= np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbup_arr_rosen = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbdw_arr_rosen = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 
-tran_temp = np.full((nprofile),np.nan,dtype=np.float32,order='F')
-tbdw_temp = np.full((nprofile),np.nan,dtype=np.float32,order='F')
-tbup_temp = np.full((nprofile),np.nan,dtype=np.float32,order='F')
 for eia_index,eia in enumerate(nom_eias):
     print(f'Processing EIA {eia:.2f}')
-    atm_rtm.atm_rtm.atm_tran_multiple_profiles(eia,t,h,tot_abs_rss,tran_temp,tbdw_temp,tbup_temp)
-    tran_arr_rss[:,eia_index] = tran_temp
-    tbdw_arr_rss[:,eia_index] = tbdw_temp
-    tbup_arr_rss[:,eia_index] = tbup_temp
+    # this calls the fortran routine analyze the profiles
+    atm_rtm.atm_rtm.atm_tran_multiple_profiles(eia,t,h,
+                                               tot_abs_rss,
+                                               tran_arr_rss[:,eia_index],
+                                               tbdw_arr_rss[:,eia_index],
+                                               tbup_arr_rss[:,eia_index])
 
-    atm_rtm.atm_rtm.atm_tran_multiple_profiles(eia,t,h,tot_abs_rosen,tran_temp,tbdw_temp,tbup_temp)
-    tran_arr_rosen[:,eia_index] = tran_temp
-    tbdw_arr_rosen[:,eia_index] = tbdw_temp
-    tbup_arr_rosen[:,eia_index] = tbup_temp
-    
-    
+    atm_rtm.atm_rtm.atm_tran_multiple_profiles(eia,t,h,
+                                               tot_abs_rosen,
+                                               tran_arr_rosen[:,eia_index],
+                                               tbdw_arr_rosen[:,eia_index],
+                                               tbup_arr_rosen[:,eia_index])
+
+#reshape back to 721 x 1440 x num_eias maps for plotting
 tran_map_rss = np.flipud(np.reshape(tran_arr_rss,(721,1440,num_eias)))
 tbup_map_rss = np.flipud(np.reshape(tbup_arr_rss,(721,1440,num_eias)))
 tbdw_map_rss = np.flipud(np.reshape(tbdw_arr_rss,(721,1440,num_eias)))
