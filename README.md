@@ -16,9 +16,20 @@ This project currently contains python wrappers for various atmospheric absorpti
 
 
 ## Installation
+
+### Requires:
+* numpy
+* matplotlib
+* xarray
+
 In the top level directory, run
 ```
 python -m build .
+```
+This will build a wheel for your distribution of python in the /dist directory.
+
+To install the wheel
+```
 python -m pip install dist/atm_abs-0.0.1-cp310-cp310-linux_x86_64.whl
 ```
 (you will have to modify the second command to match the name of the wheel that was made by the build command if you are using a different version of python.)
