@@ -4,14 +4,9 @@ import numpy as np
 from pathlib import Path
 import xarray as xr
 
+# local imports
 import atm_rtm
-import msu_constants
 import amsu_constants
-
-
-
-
-
 
 def calc_abs_table(*,channel,AMSU_num_freq,O2_model):
     M_W_AIR = 2.8966e-2
@@ -78,32 +73,45 @@ def calc_abs_table(*,channel,AMSU_num_freq,O2_model):
             freq = amsu_freq_arr[freq_index,band_index]
             print(f'Processing Channel {channel}: band_index {band_index} freq index {freq_index} freq {freq:.2f} GHz')
             for t_index,t in enumerate(t_values):
-                #print(f'Processing T {t:.2f} K')
+                print(f'Processing T {t:.2f} K')
                 for p_index,p in enumerate(p_values): 
+ 
+                    pv = p*q_values/(0.622+0.378*q_values)
+
+                    o2abs = np.full_like(pv,np.nan,dtype=np.float32)
+                    h2oabs = np.full_like(pv,np.nan,dtype=np.float32)
+                    if O2_model == 'RSS_2022':
+                        atm_rtm.atm_rtm.abs_o2_rss_2022(np.full_like(pv,t),
+                                                        np.full_like(pv,p),
+                                                        pv,
+                                                        np.full_like(pv,freq),
+                                                        o2abs)
+                    elif O2_model == 'Rosenkranz_2017':
+                        atm_rtm.atm_rtm.abs_o2_rosen_2017(np.full_like(pv,t),
+                                                        np.full_like(pv,p),
+                                                        pv,
+                                                        np.full_like(pv,freq),
+                                                        o2abs)
+    
+                    atm_rtm.atm_rtm.abs_h2o_rss_2022(np.full_like(pv,t),
+                                                     np.full_like(pv,p),
+                                                     pv,
+                                                     np.full_like(pv,freq),
+                                                     h2oabs)
+                    if p < 0.001:
+                        o2abs = np.zeros_like(pv)
+                    total_abs = h2oabs + o2abs
+                    abs_table[:,p_index,t_index] = abs_table[:,p_index,t_index] + total_abs
                     
-                    for q_index,q in enumerate(q_values): 
-                        
-                        pv = p*q/(0.622+0.378*q)
+#                   ! find density
 
-                        o2abs = np.full_like(freq,np.nan,dtype=np.float32)
-                        h2oabs = np.full_like(freq,np.nan,dtype=np.float32)
-                        if O2_model == 'RSS_2022':
-                            atm_rtm.atm_rtm.abs_o2_rss_2022(t,p,pv,freq,o2abs)
-                        elif O2_model == 'Rosenkranz_2017':
-                            atm_rtm.atm_rtm.abs_o2_rosen_2017(t,p,pv,freq,o2abs)
-        
-                        atm_rtm.atm_rtm.abs_h2o_rss_2022(t,p,pv,freq,h2oabs)
-                        if p < 0.001:
-                            o2abs = 0.0
-                        total_abs = h2oabs + o2abs
-                        abs_table[q_index,p_index,t_index] = abs_table[q_index,p_index,t_index] + total_abs
-                        
-    #                   ! find density
-
-                        rho_dry = (p-pv)/(c_air*t)
-                        rho_vap = pv/(c_h2o*t)
-                        abs_table_per_Pa[q_index,p_index,t_index] = (abs_table_per_Pa[q_index,p_index,t_index] + 
-                                                                    total_abs*0.001/((rho_dry + rho_vap) * g))
+                    rho_dry = (p-pv)/(c_air*t)
+                    rho_vap = pv/(c_h2o*t)
+                    
+                    # convert to neper/Pa
+                    abs_table_per_Pa[:,p_index,t_index] = (abs_table_per_Pa[:,p_index,t_index] + 
+                                                            total_abs*0.001/((rho_dry + rho_vap) * g))
+                    abs_table_per_Pa[((rho_dry + rho_vap) * g) == 0.0,p_index,t_index] = 0.0
 
     abs_table = abs_table/(AMSU_num_freq*AMSU_num_band)
     abs_table_per_Pa = abs_table_per_Pa/(AMSU_num_freq*AMSU_num_band)
@@ -131,7 +139,7 @@ def calc_abs_table(*,channel,AMSU_num_freq,O2_model):
                                 )
 
 
-    nc_file = Path(f'/mnt/m/job_access/atm_abs_python_fortran/make_tables/tables/amsu_{channel:02d}_abs_table_q_per_km_{O2_model}.v3.nc')
+    nc_file = Path(f'tables/amsu_{channel:02d}_abs_table_q_per_km_{O2_model}.v4.nc')
     abs_table_xr.to_netcdf(nc_file)
 
     abs_table_per_Pa_xr = xr.Dataset(
@@ -152,7 +160,7 @@ def calc_abs_table(*,channel,AMSU_num_freq,O2_model):
                                         'creator_email':'mears@remss.com'}
                                 )
 
-    nc_file = Path(f'/mnt/m/job_access/atm_abs_python_fortran/make_tables/tables/amsu_{channel:02d}_abs_table_q_per_Pa_{O2_model}.v3.nc')
+    nc_file = Path(f'tables/amsu_{channel:02d}_abs_table_q_per_Pa_{O2_model}.v4.nc')
     abs_table_per_Pa_xr.to_netcdf(nc_file)
 
     print('Done')

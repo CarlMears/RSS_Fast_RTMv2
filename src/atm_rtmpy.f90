@@ -412,8 +412,6 @@ contains
 
     end subroutine atm_tran_multiple_profiles
 
-
-
     subroutine atm_tran(nlev,tht,t,z,tabs,tran,tbdw,tbup)
         implicit none
     

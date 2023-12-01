@@ -5,9 +5,7 @@ from pathlib import Path
 import xarray as xr
 
 import atm_rtm
-import msu_constants
 import amsu_constants
-
 
 
 def calc_cld_abs_table(*,channel,AMSU_num_freq):
@@ -94,7 +92,7 @@ def calc_cld_abs_table(*,channel,AMSU_num_freq):
                                 }
                                 )
 
-    nc_file = Path(f'/mnt/m/job_access/atm_abs_python_fortran/make_tables/tables/amsu_{channel:02d}_abs_table_cld_per_km.v3.nc')
+    nc_file = Path(f'tables/amsu_{channel:02d}_abs_table_cld_per_km.v3.nc')
     print(f'Writing to: {nc_file}')
     abs_table_xr.to_netcdf(nc_file)
 
@@ -103,7 +101,6 @@ def calc_cld_abs_table(*,channel,AMSU_num_freq):
 if __name__ == '__main__':
     for channel in np.arange(4,10):
         AMSU_num_freq = 7
-        for O2_model in ['RSS_2022','Rosenkranz_2017']:
-            calc_cld_abs_table(channel=channel,AMSU_num_freq=AMSU_num_freq)
+        calc_cld_abs_table(channel=channel,AMSU_num_freq=AMSU_num_freq)
 
 # end program

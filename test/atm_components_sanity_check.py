@@ -10,8 +10,8 @@ import atm_rtm
 
 import sys
 sys.path.append('/mnt/m/job_access/atm_abs_python_fortran/make_tables')
-import msu_constants
-import amsu_constants
+import test.msu_constants as msu_constants
+import test.amsu_constants as amsu_constants
 
 import matplotlib.pyplot as plt
 from rss_plotting.global_map import plot_global_map

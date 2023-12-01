@@ -10,8 +10,8 @@ import atm_rtm
 
 import sys
 sys.path.append('/mnt/m/job_access/atm_abs_python_fortran/make_tables')
-import msu_constants
-import amsu_constants
+import test.msu_constants as msu_constants
+import test.amsu_constants as amsu_constants
 
 import matplotlib.pyplot as plt
 from rss_plotting.global_map import plot_global_map
@@ -144,8 +144,6 @@ print('Calculating Trans, Tbdw, Tbup')
 nom_eias = amsu_constants.AMSU_NOM_EIAS
 num_eias = len(nom_eias)
 
-tht = 0.0
-
 # allocate arrays for the results.  Setting order='F' is required for fortran routines.
 tran_arr_rss= np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbup_arr_rss = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
@@ -155,6 +153,7 @@ tran_arr_rosen= np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbup_arr_rosen = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 tbdw_arr_rosen = np.full((nprofile,num_eias),np.nan,dtype=np.float32,order='F')
 
+# loop over the nominal EIA values for AMSU
 for eia_index,eia in enumerate(nom_eias):
     print(f'Processing EIA {eia:.2f}')
     # this calls the fortran routine analyze the profiles
@@ -178,6 +177,25 @@ tbdw_map_rss = np.flipud(np.reshape(tbdw_arr_rss,(721,1440,num_eias)))
 tran_map_rosen = np.flipud(np.reshape(tran_arr_rosen,(721,1440,num_eias)))
 tbup_map_rosen = np.flipud(np.reshape(tbup_arr_rosen,(721,1440,num_eias)))
 tbdw_map_rosen = np.flipud(np.reshape(tbdw_arr_rosen,(721,1440,num_eias)))
+
+tran_map_TLT_rss = np.zeros((721,1440),dtype=np.float32)
+tbup_map_TLT_rss = np.zeros((721,1440),dtype=np.float32)
+tbdw_map_TLT_rss = np.zeros((721,1440),dtype=np.float32)
+
+tran_map_TLT_rosen = np.zeros((721,1440),dtype=np.float32)
+tbup_map_TLT_rosen = np.zeros((721,1440),dtype=np.float32)
+tbdw_map_TLT_rosen = np.zeros((721,1440),dtype=np.float32)
+
+
+for eia_index,eia in enumerate(nom_eias):
+    tran_map_TLT_rss += tran_map_rss[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+    tbup_map_TLT_rss += tbup_map_rss[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+    tbdw_map_TLT_rss += tbdw_map_rss[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+
+    tran_map_TLT_rosen += tran_map_rosen[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+    tbup_map_TLT_rosen += tbup_map_rosen[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+    tbdw_map_TLT_rosen += tbdw_map_rosen[:,:,eia_index]*amsu_constants.AMSU_A_TLT_WTS[eia_index]
+
 
 
 print('Finished RTM calculations')

@@ -7,8 +7,8 @@ import xarray as xr
 
 
 import atm_rtm
-import msu_constants
-import amsu_constants
+import test.msu_constants as msu_constants
+import test.amsu_constants as amsu_constants
 
 import matplotlib.pyplot as plt
 
