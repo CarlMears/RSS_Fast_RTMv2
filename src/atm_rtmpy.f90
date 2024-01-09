@@ -219,7 +219,7 @@ contains
         real(4) :: pv1(0:nlev)
         real(4) :: rhol1(0:nlev)
     
-        integer(4), parameter :: ioxy = 1
+        integer(4), parameter :: ioxy = 1 ! This chooses the RSS 2022 absorption model
 
         integer(4) :: iprofile,ilev,ilevel0
         
@@ -236,6 +236,7 @@ contains
             t1 = t(:,iprofile)
             pv1 = pv(:,iprofile)
             rhol1 = rhol(:,iprofile)
+            ilevel0 = 0
 
             ! insert the surface data at the right level and set
             ! ilevel0 to the index of the surface data and ignore levels
@@ -264,6 +265,9 @@ contains
 
     end subroutine get_atm_components_rss_2022_2d
 
+    
+
+
     subroutine get_atm_components_rosen_2017_2d(nlev,nprofile, freq, tht, z, &
         p, t, pv, rhol,tran,tbup,tbdw)
     
@@ -288,7 +292,7 @@ contains
         real(4) :: pv1(0:nlev)
         real(4) :: rhol1(0:nlev)
     
-        integer(4), parameter :: ioxy = 2
+        integer(4), parameter :: ioxy = 2 ! this chooses the Rosenkranz 2017 model
 
         integer(4) :: iprofile,ilev,ilevel0
         
@@ -305,12 +309,13 @@ contains
             t1 = t(:,iprofile)
             pv1 = pv(:,iprofile)
             rhol1 = rhol(:,iprofile)
+            ilevel0 = 0
 
             ! insert the surface data at the right level and set
             ! ilevel0 to the index of the surface data and ignore levels
             ! below this level
             do ilev = nlev,1,-1
-                if (z1(0)>z1(ilev)) then
+                if (z1(0)>z1(ilev)) then  !if the surface height (z1(0) is above the current level (z1(ilev):...
                     !replace this level with the surface data
                     p1(ilev) = p1(0)
                     t1(ilev) = t1(0)
@@ -385,11 +390,12 @@ contains
         integer(4) :: iprofile,ilevel0,ilev
 
         do iprofile=1,nprofile
-
+            
             z1 = z_arr(:,iprofile)
             t1 = t_arr(:,iprofile)
             tabs1 = tabs_arr(:,iprofile)
-
+            ilevel0 = 0
+            
             ! insert the surface data at the right level and set
             ! ilevel0 to the index of the surface data and ignore levels
             ! below this level
@@ -400,7 +406,6 @@ contains
                     tabs1(ilev) = tabs1(0)
                     z1(ilev) = z1(0)
                     ilevel0 = ilev
-                    !print *,'iprofile = ',iprofile,'replacing level ',ilev,' with surface data'
                     exit
                 endif
             enddo 
@@ -408,6 +413,18 @@ contains
             call atm_tran(nlev-ilevel0, tht, &
                 t1(ilevel0:nlev), z1(ilevel0:nlev), tabs1(ilevel0:nlev), &
                 tran_arr(iprofile), tbdw_arr(iprofile), tbup_arr(iprofile))
+
+            if (iprofile .eq. 2809) then
+                print *,'iprofile = ',iprofile
+                print *,'start_level = ',ilevel0
+                print *,'z1 = ',z1
+                print *,'t1 = ',t1
+                print *,'tabs1 = ',tabs1
+                print *
+                print *,'tran = ',tran_arr(iprofile)
+            endif
+    
+
         enddo
 
     end subroutine atm_tran_multiple_profiles
@@ -429,9 +446,9 @@ contains
         !        input:
         !             nlev           number of atmosphere levels
         !             tht            earth incidence angle [in deg]
-        !             tabs(0:nlev)   atmosphric absorptrion coefficients [nepers/m]
+        !             tabs(0:nlev)   atmospheric absorptrion coefficients [nepers/m]
         !             t(0:nlev)      temperature profile[in k]
-        !              z(0:nlev)      elevation (m) 
+        !             z(0:nlev)      elevation (m) 
     
         !        output:
         !            tran            total atmospheric transmission

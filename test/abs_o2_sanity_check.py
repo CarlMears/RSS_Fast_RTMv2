@@ -2,7 +2,6 @@
 import numpy as np
 import os
 from pathlib import Path
-#from atm_abs import o2abs_19_sub, absoxy_rss_2022_sub
 import atm_rtm
 
 import matplotlib.pyplot as plt
@@ -36,7 +35,7 @@ for pressure_value in pressure_list:
     pv = np.full_like(frequency,np.nan,dtype=np.float32)
     atm_rtm.atm_rtm.goff_gratch_rss_2022(temperature,pressure,rel_num, pv)
     
-    
+
     o2abs_rosen = np.full_like(frequency,np.nan,dtype=np.float32)
     o2abs_rss = np.full_like(frequency,np.nan,dtype=np.float32)
     h2oabs_rss = np.full_like(frequency,np.nan,dtype=np.float32)

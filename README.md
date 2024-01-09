@@ -19,7 +19,7 @@ This project currently contains python wrappers for various atmospheric absorpti
 
 ### Requires:
 * numpy
-* matplotlib
+* matplotlib (for testing)
 * xarray
 
 In the top level directory, run
@@ -63,7 +63,7 @@ python make_abs_table_cld.AMSU.multiband.py
 python make_abs_table_q.AMSU.multiband.py
 ```
 
-This confirms that the atm_rtm package as built sucessfully.  The first python command executed in a few seconds.
+This confirms that the atm_rtm package as built successfully.  The first python command executed in a few seconds.
 The second one takes much longer.
 If you don't want to wait for this, you can download the tables (for only the RSS Oxygen model) from zenodo:
 
