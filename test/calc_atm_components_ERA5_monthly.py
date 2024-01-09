@@ -291,69 +291,69 @@ fig1,ax1 = plot_global_map(np.flipud(tran_arr),plt_colorbar=True,vmin=0.0,vmax=1
 fig2,ax2 = plot_global_map(np.flipud(tbdw_arr),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbdw')
 fig3,ax3 = plot_global_map(np.flipud(tbup_arr),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbup')
 
-# try removing the lower levels by hand:
-h2 = np.zeros_like(h,dtype=np.float32,order='F')
-t2 = np.zeros_like(h,dtype=np.float32,order='F')
-abs2 = np.zeros_like(h,dtype=np.float32,order='F')
+# # try removing the lower levels by hand:
+# h2 = np.zeros_like(h,dtype=np.float32,order='F')
+# t2 = np.zeros_like(h,dtype=np.float32,order='F')
+# abs2 = np.zeros_like(h,dtype=np.float32,order='F')
 
-shp = h.shape
-nlev = shp[0]
-nprofile = shp[1]
-num_lev_to_use = np.zeros(nprofile,dtype=np.int32,order='F')
+# shp = h.shape
+# nlev = shp[0]
+# nprofile = shp[1]
+# num_lev_to_use = np.zeros(nprofile,dtype=np.int32,order='F')
 
-lower_thickness = np.full((nprofile),np.nan,dtype=np.float32,order='F')
-for iprofile in range(0,nprofile):
-    h1 = h[:,iprofile]
-    ok = h1 > h1[0]
+# lower_thickness = np.full((nprofile),np.nan,dtype=np.float32,order='F')
+# for iprofile in range(0,nprofile):
+#     h1 = h[:,iprofile]
+#     ok = h1 > h1[0]
 
-    h2x = np.array([h1[0]])
-    h2x = np.append(h2x,h1[ok])
-    h2[:,iprofile] = h2x[-1]+np.arange(0,nlev)*0.1
-    h2[0:len(h2x),iprofile] = h2x
+#     h2x = np.array([h1[0]])
+#     h2x = np.append(h2x,h1[ok])
+#     h2[:,iprofile] = h2x[-1]+np.arange(0,nlev)*0.1
+#     h2[0:len(h2x),iprofile] = h2x
     
 
-    t2x = np.array([t[0,iprofile]])
-    t2x = np.append(t2x,t[ok,iprofile])
-    t2[:,iprofile] = t2x[-1]
-    t2[0:len(t2x),iprofile] = t2x
+#     t2x = np.array([t[0,iprofile]])
+#     t2x = np.append(t2x,t[ok,iprofile])
+#     t2[:,iprofile] = t2x[-1]
+#     t2[0:len(t2x),iprofile] = t2x
 
-    abs2x = np.array([abs1_array[iprofile,0]])
-    abs2x = np.append(abs2x,abs1_array[iprofile,ok])
-    abs2[:,iprofile,] = abs2x[-1]
-    abs2[0:len(abs2x),iprofile,] = abs2x
+#     abs2x = np.array([abs1_array[iprofile,0]])
+#     abs2x = np.append(abs2x,abs1_array[iprofile,ok])
+#     abs2[:,iprofile,] = abs2x[-1]
+#     abs2[0:len(abs2x),iprofile,] = abs2x
 
-    num_lev_to_use[iprofile] = len(h2x)
-    lower_thickness[iprofile] = h2x[1]-h2x[0]
+#     num_lev_to_use[iprofile] = len(h2x)
+#     lower_thickness[iprofile] = h2x[1]-h2x[0]
 
-    if iprofile == 2808:
-        print(h2[:,iprofile])
-        print(t2[:,iprofile])
-        print(abs2[:,iprofile])
+#     if iprofile == 2808:
+#         print(h2[:,iprofile])
+#         print(t2[:,iprofile])
+#         print(abs2[:,iprofile])
 
-tht = 0.0
-tran_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
-tbdw_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
-tbup_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
+# tht = 0.0
+# tran_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
+# tbdw_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
+# tbup_arr2 = np.full((nprofile),np.nan,dtype=np.float32,order='F')
 
-atm_rtm.atm_rtm.atm_tran_multiple_profiles(tht,t2,h2,abs2,tran_arr2,tbdw_arr2,tbup_arr2)
+# atm_rtm.atm_rtm.atm_tran_multiple_profiles(tht,t2,h2,abs2,tran_arr2,tbdw_arr2,tbup_arr2)
 
-tran_arr2= np.reshape(tran_arr2,(181,360))
-tbdw_arr2 = np.reshape(tbdw_arr2,(181,360))
-tbup_arr2 = np.reshape(tbup_arr2,(181,360))
+# tran_arr2= np.reshape(tran_arr2,(181,360))
+# tbdw_arr2 = np.reshape(tbdw_arr2,(181,360))
+# tbup_arr2 = np.reshape(tbup_arr2,(181,360))
 
-fig1,ax1 = plot_global_map(np.flipud(tran_arr2),plt_colorbar=True,vmin=0.0,vmax=1.0,cmap='BrBG',title='tran2')
-fig2,ax2 = plot_global_map(np.flipud(tbdw_arr2),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbdw2')
-fig3,ax3 = plot_global_map(np.flipud(tbup_arr2),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbup2')
+# fig1,ax1 = plot_global_map(np.flipud(tran_arr2),plt_colorbar=True,vmin=0.0,vmax=1.0,cmap='BrBG',title='tran2')
+# fig2,ax2 = plot_global_map(np.flipud(tbdw_arr2),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbdw2')
+# fig3,ax3 = plot_global_map(np.flipud(tbup_arr2),plt_colorbar=True,vmin=100.0,vmax=270.,cmap='BrBG',title='tbup2')
 
 
-lower_thickness = np.reshape(lower_thickness,(181,360))
-fig,ax = plot_global_map(np.flipud(lower_thickness),plt_colorbar=True,vmin=-100.0,vmax=100.,cmap='BrBG',title='lower_thickness')
+# lower_thickness = np.reshape(lower_thickness,(181,360))
+# fig,ax = plot_global_map(np.flipud(lower_thickness),plt_colorbar=True,vmin=-100.0,vmax=100.,cmap='BrBG',title='lower_thickness')
 
-fig,ax = plot_global_map(np.flipud(np.reshape(num_lev_to_use,(181,360))),plt_colorbar=True,vmin=34.0,vmax=38.,cmap='plasma',title='num_lev_to_use')   
-# amsu_channel = 5
-# center_freq_list = [53.48,53.71]
-# bandwidth_list = [0.17,0.17]
-# n_sub_band = 5
+# fig,ax = plot_global_map(np.flipud(np.reshape(num_lev_to_use,(181,360))),plt_colorbar=True,vmin=34.0,vmax=38.,cmap='plasma',title='num_lev_to_use')   
+# # amsu_channel = 5
+# # center_freq_list = [53.48,53.71]
+# # bandwidth_list = [0.17,0.17]
+# # n_sub_band = 5
 
 tb_maps_rss = np.zeros((2,5,721,1440),dtype=np.float32,order='F')
 tb_maps_rosen = np.zeros((2,5,721,1440),dtype=np.float32,order='F')

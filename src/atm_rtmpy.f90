@@ -414,17 +414,6 @@ contains
                 t1(ilevel0:nlev), z1(ilevel0:nlev), tabs1(ilevel0:nlev), &
                 tran_arr(iprofile), tbdw_arr(iprofile), tbup_arr(iprofile))
 
-            if (iprofile .eq. 2809) then
-                print *,'iprofile = ',iprofile
-                print *,'start_level = ',ilevel0
-                print *,'z1 = ',z1
-                print *,'t1 = ',t1
-                print *,'tabs1 = ',tabs1
-                print *
-                print *,'tran = ',tran_arr(iprofile)
-            endif
-    
-
         enddo
 
     end subroutine atm_tran_multiple_profiles
