@@ -21,6 +21,7 @@ This project currently contains python wrappers for various atmospheric absorpti
 * numpy
 * matplotlib
 * xarray
+* build
 
 In the top level directory, run
 ```
@@ -59,8 +60,8 @@ Now make the absorption tables that are used in the interpolation routines.
 ```
 cd make_tables
 mkdir tables
-python make_abs_table_cld.AMSU.multiband.py
-python make_abs_table_q.AMSU.multiband.py
+python make_absorption_table_cld.AMSU.multiband.py
+python make_absorption_table_q.AMSU.multiband.py
 ```
 
 This confirms that the atm_rtm package as built sucessfully.  The first python command executed in a few seconds.
